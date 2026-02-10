@@ -90,4 +90,5 @@ fi
 pdtm -ia
 
 git clone https://github.com/projectdiscovery/nuclei-templates.git
-mv nuclei-templates $HOME/
+mkdir ~/nuclei-templates
+mv nuclei-templates/* ~/nuclei-templates/
