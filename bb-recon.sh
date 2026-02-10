@@ -28,7 +28,7 @@ HTTPX_OPTS="-silent -follow-redirects"
 NMAP_OPTS="-T4 -F"
 NUCLEI_SEVERITY="info,low,medium,high,critical"
 
-TOOLS=(subfinder assetfinder amass httpx nmap dirsearch gowitness katana gau gf nuclei nikto)
+TOOLS=(subfinder assetfinder chaos-client sublist3r amass httpx nmap dirsearch gowitness katana gau gf nuclei nikto)
 
 mkdir -p "$STATE_DIR"
 
