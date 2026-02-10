@@ -28,7 +28,6 @@ A powerful, incremental bug bounty reconnaissance automation tool written in Bas
 - gau
 - gf
 - nuclei
-- nikto
 
 ## Usage
 chmod +x bb-recon.sh
