@@ -28,7 +28,7 @@ HTTPX_OPTS="-silent -follow-redirects"
 NMAP_OPTS="-T4 -F"
 NUCLEI_SEVERITY="info,low,medium,high,critical"
 
-TOOLS=(subfinder assetfinder chaos-client sublist3r amass httpx nmap dirsearch gowitness katana gau gf nuclei nikto)
+TOOLS=(subfinder assetfinder chaos-client sublist3r amass httpx nmap dirsearch gowitness katana gau gf nuclei)
 
 mkdir -p "$STATE_DIR"
 
@@ -65,7 +65,7 @@ add_target_if_new() {
 
 create_workspace() {
   BASE_DIR="$PWD/recon-$TARGET"
-  mkdir -p "$BASE_DIR"/{subdomains,live_hosts,nmap,directories,screenshots,urls,gf,nuclei,nikto,logs}
+  mkdir -p "$BASE_DIR"/{subdomains,live_hosts,nmap,directories,screenshots,urls,gf,nuclei,logs}
 }
 
 run_subdomains() {
@@ -181,16 +181,6 @@ nuclei -l "$BASE_DIR/live_hosts/httpx_new.txt" \
     -o "$BASE_DIR/nuclei/results.txt"
 }
 
-run_nikto() {
-print_stage "[+] Running nikto scan"
-
-  while read -r h; do
-    safe=$(echo "$h" | sed 's#https\?://##g' | tr '/' '_')
-    nikto -h "$h" -o "$BASE_DIR/nikto/$safe.txt" &
-  done < "$BASE_DIR/live_hosts/httpx_new.txt"
-  wait
-}
-
 # ---------------------- MAIN -------------------------------
 
 check_dependencies
@@ -209,6 +199,5 @@ while read -r TARGET; do
   run_urls
   run_gf
   run_nuclei
-  run_nikto
 
 done < "$TARGETS_FILE"
