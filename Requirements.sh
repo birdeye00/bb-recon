@@ -4,15 +4,27 @@ set -e
 
 apt install subfinder assetfinder sublist3r amass nmap dirsearch nikto golang -y
 
-go install github.com/sensepost/gowitness@latest
+if ! command -v gowitness >/dev/null 2>&1; then
+  go install github.com/sensepost/gowitness@latest
+else
+  echo "[+] Gowitness already installed"
+fi
 
-go install github.com/lc/gau/v2/cmd/gau@latest
+if ! command -v gau >/dev/null 2>&1; then
+  go install github.com/lc/gau/v2/cmd/gau@latest
+else
+  echo "[+] gau already installed"
+fi
 
-go install github.com/tomnomnom/gf@latest
+if ! command -v gf >/dev/null 2>&1; then
+  go install github.com/tomnomnom/gf@latest
+else
+  echo "[+] gf already installed"
+fi
 
 git clone https://github.com/1ndianl33t/Gf-Patterns
-mkdir .gf
-mv ~/Gf-Patterns/*.json ~/.gf
+mkdir ~/.gf
+mv ./Gf-Patterns/*.json ~/.gf
 
 # -------------------- Detect Shell --------------------
 if [[ -n "$ZSH_VERSION" ]]; then
@@ -67,3 +79,10 @@ else
 fi
 
 source $SHELL_RC
+
+HTTPX_PATH=$(command -v httpx 2>/dev/null)
+
+if [[ "$HTTPX_PATH" == "/usr/bin/httpx" ]]; then
+  echo "[!] System httpx detected at /usr/bin/httpx — removing"
+  rm -f /usr/bin/httpx
+fi
