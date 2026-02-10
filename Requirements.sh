@@ -2,7 +2,7 @@
 
 set -e
 
-apt install subfinder assetfinder sublist3r amass nmap dirsearch nikto -y
+apt install subfinder assetfinder sublist3r amass nmap dirsearch nikto golang -y
 
 go install github.com/sensepost/gowitness@latest
 
