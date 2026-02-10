@@ -32,6 +32,7 @@ A powerful, incremental bug bounty reconnaissance automation tool written in Bas
 
 ## Usage
 chmod +x bb-recon.sh
+
 ./bb-recon.sh
 
 ## If you want to run this tool automatically everyday, add this to the cron task. (Replace the fullpath of the file)
