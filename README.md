@@ -5,10 +5,12 @@ A powerful, incremental bug bounty reconnaissance automation tool written in Bas
 ## Features
 - Daily incremental subdomain enumeration
 - Live host detection
-- Screenshotting (gowitness)
-- URL discovery (katana, gau)
-- Pattern extraction (gf)
-- Vulnerability scanning (nuclei, nikto)
+- Screenshotting
+- Port scanning
+- Directory Enumeration
+- URL discovery
+- Pattern extraction
+- Vulnerability scanning
 - Multi-target support
 - Cron-ready automation
 
