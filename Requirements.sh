@@ -78,8 +78,6 @@ else
   exit 1
 fi
 
-source $SHELL_RC
-
 HTTPX_PATH=$(command -v httpx 2>/dev/null)
 
 if [[ "$HTTPX_PATH" == "/usr/bin/httpx" ]]; then
@@ -88,6 +86,8 @@ if [[ "$HTTPX_PATH" == "/usr/bin/httpx" ]]; then
 fi
 
 pdtm -ia
+
+source $SHELL_RC
 
 git clone https://github.com/projectdiscovery/nuclei-templates.git
 mkdir ~/nuclei-templates
