@@ -86,3 +86,5 @@ if [[ "$HTTPX_PATH" == "/usr/bin/httpx" ]]; then
   echo "[!] System httpx detected at /usr/bin/httpx — removing"
   rm -f /usr/bin/httpx
 fi
+
+pdtm -ia
