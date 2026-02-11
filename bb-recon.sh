@@ -201,3 +201,12 @@ while read -r TARGET; do
   run_nuclei
 
 done < "$TARGETS_FILE"
+
+
+status=$(echo "$?")
+
+if [ $status == '0' ]; then
+  echo "Successfully Completed"
+else
+  echo "Some error occured, please try again."
+fi

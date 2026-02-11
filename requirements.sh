@@ -94,3 +94,5 @@ source $SHELL_RC
 git clone https://github.com/projectdiscovery/nuclei-templates.git
 mkdir ~/nuclei-templates
 mv nuclei-templates/* ~/nuclei-templates/
+
+source $SHELL_RC
