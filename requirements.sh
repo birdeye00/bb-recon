@@ -81,14 +81,6 @@ else
   exit 1
 fi
 
-HTTPX_PATH=$(command -v httpx 2>/dev/null)
-
-if [[ "$HTTPX_PATH" == "/usr/bin/httpx" ]]; then
-  echo "[!] System httpx detected at /usr/bin/httpx — removing"
-  rm -f /usr/bin/httpx
-fi
-
-
 PDTM_PATH="$HOME/.pdtm/go/bin"
 
 # Check if already exported in shell config
@@ -98,10 +90,12 @@ else
   echo "export PATH=\$PATH:$PDTM_PATH" >> "$SHELL_RC"
 fi
 
+HTTPX_PATH=$(command -v httpx 2>/dev/null)
 
-pdtm -ia
-
-source $SHELL_RC
+if [[ "$HTTPX_PATH" == "/usr/bin/httpx" ]]; then
+  echo "[!] System httpx detected at /usr/bin/httpx — removing"
+  rm -f /usr/bin/httpx
+fi
 
 nuc_temp_dir="$PWD/nuclei-templates"
 
@@ -112,3 +106,7 @@ else
   mkdir ~/nuclei-templates
   mv nuclei-templates/* ~/nuclei-templates/
 fi
+
+pdtm -ia
+
+source $SHELL_RC
