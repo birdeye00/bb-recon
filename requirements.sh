@@ -22,18 +22,21 @@ else
   echo "[+] gf already installed"
 fi
 
-git clone https://github.com/1ndianl33t/Gf-Patterns
-mkdir ~/.gf
-mv ./Gf-Patterns/*.json ~/.gf
+gf_dir="$PWD/Gf-Patterns"
+
+if [[ -d "$gf_dir" ]]; then
+  echo "Gf-Patterns directory already exists"
+else
+  git clone https://github.com/1ndianl33t/Gf-Patterns
+  mkdir ~/.gf
+  mv ./Gf-Patterns/*.json ~/.gf
+fi
 
 # -------------------- Detect Shell --------------------
 if [[ -n "$ZSH_VERSION" ]]; then
   SHELL_RC="$HOME/.zshrc"
 elif [[ -n "$BASH_VERSION" ]]; then
   SHELL_RC="$HOME/.bashrc"
-#else
-#  echo "[!] Unsupported shell. Please use bash or zsh."
-#  exit 1
 fi
 
 echo "[+] Using shell config: $SHELL_RC"
@@ -86,13 +89,26 @@ if [[ "$HTTPX_PATH" == "/usr/bin/httpx" ]]; then
 fi
 
 
+PDTM_PATH="$HOME/.pdtm/go/bin"
+
+# Check if already exported in shell config
+if grep -q "$PDTM_PATH" "$SHELL_RC"; then
+  echo "[+] PDTM path already exists in $SHELL_RC"
+else
+  echo "export PATH=\$PATH:$PDTM_PATH" >> "$SHELL_RC"
+fi
+
+
 pdtm -ia
 
 source $SHELL_RC
 
+nuc_temp_dir="$PWD/nuclei-templates"
 
-git clone https://github.com/projectdiscovery/nuclei-templates.git
-mkdir ~/nuclei-templates
-mv nuclei-templates/* ~/nuclei-templates/
-
-source $SHELL_RC
+if [[ -d "$nuc_temp_dir" ]]; then
+  echo "nuclei-templates directory already exists"
+else
+  git clone https://github.com/projectdiscovery/nuclei-templates.git
+  mkdir ~/nuclei-templates
+  mv nuclei-templates/* ~/nuclei-templates/
+fi
