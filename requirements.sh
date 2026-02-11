@@ -85,9 +85,11 @@ if [[ "$HTTPX_PATH" == "/usr/bin/httpx" ]]; then
   rm -f /usr/bin/httpx
 fi
 
+
 pdtm -ia
 
 source $SHELL_RC
+
 
 git clone https://github.com/projectdiscovery/nuclei-templates.git
 mkdir ~/nuclei-templates

@@ -37,3 +37,6 @@ chmod +x bb-recon.sh
 ## If you want to run this tool automatically everyday, add this to the cron task. (Replace the fullpath of the file)
 0 9 * * * /full/path/bb-recon.sh >> /full/path/bb-recon.log 2>&1
 
+keep in mind that you'd need "PDCP_API_KEY" to run chaos-client and you can freely get the key from projectdiscovery website and then add this in shell config file (.zshrc or .bashrc): 
+
+export PDCP_API_KEY="YOUR PDCP_API_KEY"
