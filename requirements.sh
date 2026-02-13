@@ -109,4 +109,4 @@ fi
 
 pdtm -ia
 
-source $SHELL_RC
+echo "Now run 'source $SHELL_RC'"
