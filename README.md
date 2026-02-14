@@ -30,11 +30,9 @@ A powerful, incremental bug bounty reconnaissance automation tool written in Bas
 - nuclei
 
 ## Usage
-chmod +x requirements.sh
+chmod +x requirements.sh bb-recon.sh
 
 ./requirements.sh
-
-chmod +x bb-recon.sh
 
 ./bb-recon.sh
 
