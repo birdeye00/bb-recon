@@ -52,11 +52,28 @@ init_targets() {
   mkdir -p "$STATE_DIR"
   touch "$TARGETS_FILE"
 
-  if [[ ! -s "$TARGETS_FILE" ]]; then
+  if [[ -t 0 ]]; then
     read -rp "Enter target domain: " t
-    echo "$t" >> "$TARGETS_FILE"
+
+    if [[ -z "$t" ]]; then
+      echo "[-] No target provided"
+      exit 1
+    fi
+
+    grep -qx "$t" "$TARGETS_FILE" || echo "$t" >> "$TARGETS_FILE"
+
+    TARGETS_TO_RUN=("$t")
+
+  else
+    if [[ ! -s "$TARGETS_FILE" ]]; then
+      echo "[-] No targets found for cron execution"
+      exit 1
+    fi
+
+    mapfile -t TARGETS_TO_RUN < "$TARGETS_FILE"
   fi
 }
+
 
 add_target_if_new() {
   local t="$1"
@@ -64,7 +81,7 @@ add_target_if_new() {
 }
 
 create_workspace() {
-  BASE_DIR="$PWD/recon-$TARGET"
+  BASE_DIR="$PWD/$TARGET"
   mkdir -p "$BASE_DIR"/{subdomains,live_hosts,nmap,directories,screenshots,urls,gf,nuclei,logs}
 }
 
@@ -186,7 +203,7 @@ nuclei -l "$BASE_DIR/live_hosts/httpx_new.txt" \
 check_dependencies
 init_targets
 
-while read -r TARGET; do
+for TARGET in "${TARGETS_TO_RUN[@]}"; do
   create_workspace
 
   run_subdomains
@@ -200,7 +217,7 @@ while read -r TARGET; do
   run_gf
   run_nuclei
 
-done < "$TARGETS_FILE"
+done
 
 
 status=$(echo "$?")
