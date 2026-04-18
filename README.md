@@ -34,6 +34,7 @@ A modular and intelligent Bash-based recon framework for automating common bug b
 
 '''
 git clone https://github.com/birdeye00/bb-recon.git
+
 cd bb-recon
 '''
 
@@ -42,6 +43,7 @@ cd bb-recon
 
 '''
 chmod +x requirements.sh
+
 ./requirements.sh
 '''
 
@@ -52,6 +54,7 @@ Run the main script:
 
 '''
 chmod +x bb-recon.sh
+
 ./bb-recon.sh
 '''
 
