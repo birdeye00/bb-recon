@@ -32,6 +32,21 @@ TOOLS=(subfinder assetfinder chaos-client sublist3r amass httpx nmap dirsearch g
 
 mkdir -p "$STATE_DIR"
 
+# ---------------------- DECLARATION -----------------------------
+
+declare -A DEPENDENCIES
+
+DEPENDENCIES=(
+  [subdomains]=""
+  [httpx]="subdomains"
+  [screenshots]="httpx"
+  [nmap]="httpx"
+  [dir]="httpx"
+  [urls]="httpx"
+  [gf]="urls"
+  [nuclei]="httpx"
+)
+
 # ---------------------- FUNCTIONS --------------------------
 
 print_stage() {
@@ -118,9 +133,25 @@ print_stage "[+] Checking new subdomains"
 }
 
 run_httpx() {
-print_stage "[+] Getting live hosts"
+  print_stage "[+] Getting live hosts"
 
-  httpx $HTTPX_OPTS -l "$BASE_DIR/subdomains/new_subdomains.txt" \
+  if [[ "$SCOPE_MODE" == "single" ]]; then
+    echo "$TARGET" > "$BASE_DIR/live_hosts/single_target.txt"
+
+    INPUT_FILE="$BASE_DIR/live_hosts/single_target.txt"
+
+  else
+    INPUT_FILE="$BASE_DIR/subdomains/new_subdomains.txt"
+
+    # 🔥 Safety fallback
+    if [[ ! -s "$INPUT_FILE" ]]; then
+      echo "[!] No new_subdomains.txt found, using current.txt"
+
+      INPUT_FILE="$BASE_DIR/subdomains/current.txt"
+    fi
+  fi
+
+  httpx $HTTPX_OPTS -l "$INPUT_FILE" \
     -o "$BASE_DIR/live_hosts/httpx_new.txt"
 }
 
@@ -173,18 +204,24 @@ run_dir_enum() {
 }
 
 run_urls() {
-print_stage "[+] Extracting URLs"
+  print_stage "[+] Extracting URLs"
 
   katana -list "$BASE_DIR/live_hosts/httpx_new.txt" -silent \
     -o "$BASE_DIR/urls/katana.txt"
-  gau --subs "$TARGET" > "$BASE_DIR/urls/gau.txt"
+
+  if [[ "$SCOPE_MODE" == "single" ]]; then
+    gau "$TARGET" > "$BASE_DIR/urls/gau.txt"
+  else
+    gau --subs "$TARGET" > "$BASE_DIR/urls/gau.txt"
+  fi
+
   cat "$BASE_DIR/urls"/*.txt | sort -u > "$BASE_DIR/urls/all_urls.txt"
 }
 
 run_gf() {
 print_stage "[+] Running GF to get patterns"
 
-  for p in xss sqli lfi ssrf redirect cmdi rce debug_logic idor interestingEXT interestingsubs interestingparams debug img-traversal jsvar ssti; do
+  for p in xss sqli lfi ssrf redirect cmdi rce debug_logic idor interestingEXT interestingsubs interestingparams debug img-traversal ssti; do
     cat "$BASE_DIR/urls/all_urls.txt" | gf "$p" > "$BASE_DIR/gf/$p.txt"
   done
 }
@@ -198,24 +235,140 @@ nuclei -l "$BASE_DIR/live_hosts/httpx_new.txt" \
     -o "$BASE_DIR/nuclei/results.txt"
 }
 
+show_menu() {
+  echo -e "\nSelect operation:"
+  echo "1) Subdomain Enumeration (-d)"
+  echo "2) Live Hosts (httpx) (-l)"
+  echo "3) Screenshots (-s)"
+  echo "4) Nmap Scan (-n)"
+  echo "5) Directory Bruteforce (-b)"
+  echo "6) URL Extraction (-u)"
+  echo "7) GF Patterns (-p)"
+  echo "8) Nuclei Scan (-v)"
+  echo "9) Run ALL (default)"
+  echo ""
+  read -rp "Enter choice: " choice
+}
+
+map_choice() {
+  case "$choice" in
+    1|-d) SELECTED_STEP="subdomains" ;;
+    2|-l) SELECTED_STEP="httpx" ;;
+    3|-s) SELECTED_STEP="screenshots" ;;
+    4|-n) SELECTED_STEP="nmap" ;;
+    5|-b) SELECTED_STEP="dir" ;;
+    6|-u) SELECTED_STEP="urls" ;;
+    7|-p) SELECTED_STEP="gf" ;;
+    8|-v) SELECTED_STEP="nuclei" ;;
+    9|"") SELECTED_STEP="all" ;;
+    *) echo "Invalid choice"; exit 1 ;;
+  esac
+}
+
+check_and_run() {
+  local step="$1"
+
+  # 🚫 Skip subdomain step in single mode
+  if [[ "$SCOPE_MODE" == "single" && "$step" == "subdomains" ]]; then
+    return
+  fi
+
+  local dep="${DEPENDENCIES[$step]}"
+
+  # 🔁 Handle dependency
+  if [[ -n "$dep" ]]; then
+    check_and_run "$dep"
+  fi
+
+  local result="${RESULT_FILES[$step]}"
+
+  if [[ -e "$result" && -s "$result" ]]; then
+    echo "[!] $step already completed."
+
+    if [[ -t 0 ]]; then
+      read -rp "Use existing result? (y/n): " ans
+      [[ "$ans" == "y" ]] && return
+    else
+      return
+    fi
+  fi
+
+  echo "[+] Running $step..."
+
+  case "$step" in
+    subdomains)
+  run_subdomains
+  detect_new_subdomains || {
+    echo "[-] No new subdomains found, using current list"
+
+    cp "$BASE_DIR/subdomains/current.txt" \
+       "$BASE_DIR/subdomains/new_subdomains.txt"
+  }
+;;
+    httpx) run_httpx ;;
+    screenshots) run_screenshots ;;
+    nmap) run_nmap ;;
+    dir) run_dir_enum ;;
+    urls) run_urls ;;
+    gf) run_gf ;;
+    nuclei) run_nuclei ;;
+  esac
+}
+
+ask_scope() {
+  if [[ -t 0 ]]; then
+    read -rp "Include subdomains in scope? (y/n): " scope_choice
+
+    if [[ "$scope_choice" == "y" ]]; then
+      SCOPE_MODE="subdomains"
+    else
+      SCOPE_MODE="single"
+    fi
+  else
+    SCOPE_MODE="subdomains"  # cron default
+  fi
+}
+
 # ---------------------- MAIN -------------------------------
 
 check_dependencies
 init_targets
 
 for TARGET in "${TARGETS_TO_RUN[@]}"; do
+
   create_workspace
 
-  run_subdomains
-  detect_new_subdomains || continue
+  # ✅ Define RESULT FILES HERE (because BASE_DIR exists now)
+  declare -A RESULT_FILES=(
+    [subdomains]="$BASE_DIR/subdomains/all_subdomains.txt"
+    [httpx]="$BASE_DIR/live_hosts/httpx_new.txt"
+    [screenshots]="$BASE_DIR/screenshots"
+    [nmap]="$BASE_DIR/nmap"
+    [dir]="$BASE_DIR/directories"
+    [urls]="$BASE_DIR/urls/all_urls.txt"
+    [gf]="$BASE_DIR/gf"
+    [nuclei]="$BASE_DIR/nuclei/results.txt"
+  )
 
-  run_httpx
-  run_screenshots
-  run_nmap
-  run_dir_enum
-  run_urls
-  run_gf
-  run_nuclei
+  if [[ -t 0 ]]; then
+    show_menu
+    ask_scope
+  else
+    choice=9
+    SCOPE_MODE="subdomains"
+  fi
+
+  # ✅ Map user choice
+  map_choice
+
+  # ✅ EXECUTION LOGIC (THIS IS STEP 5)
+  if [[ "$SELECTED_STEP" == "all" ]]; then
+    for step in subdomains httpx screenshots nmap dir urls gf nuclei; do
+      check_and_run "$step"
+    done
+  else
+    check_and_run "$SELECTED_STEP"
+  fi
 
 done
 
