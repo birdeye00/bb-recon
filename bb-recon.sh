@@ -107,7 +107,7 @@ print_stage "[+] Getting all subdomains"
   assetfinder --subs-only "$TARGET" > "$BASE_DIR/subdomains/assetfinder.txt" &
   sublist3r -d "$TARGET" -o "$BASE_DIR/subdomains/sublister.txt" &
   chaos-client -d "$TARGET" > "$BASE_DIR/subdomains/chaos.txt" &
-  amass enum -passive -d "$TARGET" > "$BASE_DIR/subdomains/amass.txt" &
+  amass enum -passive -d "$TARGET" -silent > "$BASE_DIR/subdomains/amass.txt" &
   wait
 
   cat "$BASE_DIR/subdomains"/*.txt | sort -u > "$BASE_DIR/subdomains/current.txt"
